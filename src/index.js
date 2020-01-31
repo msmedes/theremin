@@ -21,8 +21,6 @@ const maxFrequency = 2000
 const minGain = 0
 const maxGain = 1
 
-console.log(video)
-
 const modelParams = {
   flipHorizontal: true,   // flip e.g for video  
   maxNumBoxes: 2,        // maximum number of boxes to detect
@@ -32,9 +30,6 @@ const modelParams = {
 
 const windowHeight = window.innerHeight
 const windowWidth = window.innerWidth
-
-console.log("windowHeight", windowHeight)
-console.log("windowWidth", windowWidth)
 
 let audioContext = new AudioContext(),
   gainNode = audioContext.createGain(),
@@ -47,7 +42,6 @@ gainNode.connect(audioContext.destination)
 
 const startHandtrack = () => {
   startVideo(video).then((status) => {
-    console.log("video started", status);
     if (status) {
       isVideo = true
       runDetection()
@@ -69,7 +63,6 @@ const calculateGain = (y) => {
 }
 
 const createOscillator = (coords) => {
-  console.log('coords', coords)
   const { volumeY, pitchX } = coords
   oscillator = audioContext.createOscillator()
   oscillator.frequency.linearRampToValueAtTime(calculateFrequency(pitchX), audioContext.currentTime + glide)
@@ -162,7 +155,6 @@ const changeFrequency = (coords) => {
 
 const runDetection = () => {
   model.detect(video).then(predictions => {
-    console.log("Predictions: ", predictions)
     // model.renderPredictions(predictions, canvas, context, video)
     if (predictions.length > 0) {
       const coords = getVolumeAndPitchCoords(predictions)
