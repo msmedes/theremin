@@ -1,0 +1,12 @@
+/* .canvasbox {
+  width: 100%;
+  opacity: 0.65;
+  min-height: 100vh;
+  margin: 0 auto;
+  position: fixed;
+  background: transparent;
+  border-radius: 5px;
+} */
+video {
+  display: none;
+}
