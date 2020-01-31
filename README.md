@@ -2,8 +2,15 @@
 
 It's a theremin you can control with your hands! So that's fun.
 
-to run:
+To install:
+`npm install`
+
+To run:
 `npm run dev`
+
+Go to `localhost:1234`
+
+Make music! (kind of)
 
 I would recommend pointing your camera down towards your hands, unless you want to control the theremin with your face. I currently have the video feed off, though you can turn if back on by uncommenting line 166 in `index.js`: `// model.renderPredictions(predictions, canvas, context, video)` if you want to get an idea for positioning.
 
