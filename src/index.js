@@ -1,18 +1,22 @@
 import { startVideo, load } from 'handtrackjs'
 
 const video = document.getElementById('myvideo')
-const canvas = document.getElementById('canvas')
-const context = canvas.getContext('2d')
+// const canvas = document.getElementById('canvas')
+// const context = canvas.getContext('2d')
 const body = document.getElementById('body')
+const pitchCircle = document.querySelector('#pitchCircle')
+const volumeCircle = document.querySelector('#volumeCircle')
+const muteButton = document.querySelector('#muteButton')
+const loading = document.querySelector('#loading')
+
 
 let isVideo = false
 let model = null
 let oscStarted = false
-const glide = 0.5
+let muted = true
 
-const minHue = 0
+const glide = 0.5
 const maxHue = 360
-const minLight = 0
 const maxLight = 85
 const lightFactor = 0.65
 const lightFactorOffset = lightFactor * 100
@@ -21,39 +25,53 @@ const maxFrequency = 2000
 const minGain = 0
 const maxGain = 1
 
+let AudioContext
+let audioContext
+let gainNode
+let oscillator
+
 const modelParams = {
-  flipHorizontal: true, // flip e.g for video
+  flipHorizontal: true, // flip e.g for video// reduce input image size for speed gainz
   maxNumBoxes: 2, // maximum number of boxes to detect
   iouThreshold: 0.5, // ioU threshold for non-max suppression
   scoreThreshold: 0.6, // confidence threshold for predictions.
 }
 
+const toggleDisplayLoading = () => {
+  loading.style.display = 'none'
+}
+
 const windowHeight = window.innerHeight
 const windowWidth = window.innerWidth
 
-const audioContext = new AudioContext()
-const gainNode = audioContext.createGain()
-let oscillator = null
-const pitchCircle = document.querySelector('#pitchCircle')
-const volumeCircle = document.querySelector('#volumeCircle')
-
-
-gainNode.connect(audioContext.destination)
-
-const startHandtrack = () => {
-  startVideo(video).then((status) => {
-    if (status) {
-      isVideo = true
-      runDetection()
-    }
-  })
+const stopOscillator = () => {
+  if (oscillator) {
+    oscillator.stop(audioContext.currentTime)
+    oscillator.disconnect()
+  }
+  oscStarted = false
 }
+
+muteButton.addEventListener('click', () => {
+  if (muted && !audioContext) {
+    AudioContext = window.AudioContext || window.webkitAudioContext
+    audioContext = new AudioContext()
+    gainNode = audioContext.createGain()
+    oscillator = null
+    gainNode.connect(audioContext.destination)
+    muted = false
+    muteButton.innerHTML = 'MUTE'
+  } else {
+    muteButton.innerHTML = 'PLAY'
+    muted = true
+    stopOscillator()
+  }
+})
+
 
 const calculateFrequency = (x) => {
   const half = windowWidth / 2
-
   const freq = ((x - half) / half) * (maxFrequency - minFrequency)
-
   return Math.max(minFrequency, freq)
 }
 
@@ -68,14 +86,6 @@ const createOscillator = (coords) => {
   oscillator.start(audioContext.currentTime)
 }
 
-const stopOscillator = () => {
-  if (oscillator) {
-    oscillator.stop(audioContext.currentTime)
-    oscillator.disconnect()
-  }
-  oscStarted = false
-}
-
 const invertHSL = (hue, lightness) => {
   const inverseHue = (hue + 180) % 360
   const color = `hsl(${inverseHue}, 100%, ${lightness}%)`
@@ -86,8 +96,6 @@ const drawCircle = (circle, x, y, hue, lightness) => {
   circle.style.left = `${x}px`
   circle.style.top = `${y}px`
   circle.style.position = 'absolute'
-  circle.style.width = '10px'
-  circle.style.height = '10px'
   circle.style.borderRadius = '50%'
   circle.style.background = invertHSL(hue, lightness)
 }
@@ -99,8 +107,12 @@ const getHue = (freq, vol) => {
 }
 const updateBackground = (hue, lightness) => {
   const color = `hsl(${hue}, 100%, ${lightness}%)`
-  body.style.transition = 'background-color .75 ease'
+  body.style.transition = 'background-color .75 linear'
   body.style.backgroundColor = color
+}
+
+const updateButton = (hue, lightness) => {
+  muteButton.style.backgroundColor = invertHSL(hue, lightness)
 }
 
 const getPredictionCoords = (predictions) => {
@@ -145,34 +157,45 @@ const changeFrequency = (coords) => {
     oscillator.frequency.linearRampToValueAtTime(freq, audioContext.currentTime + glide)
     gainNode.gain.linearRampToValueAtTime(volume, audioContext.currentTime + glide)
     const [hue, lightness] = getHue(freq, volume)
-    updateBackground(hue, lightness)
     drawCircle(volumeCircle, coords.volumeX, coords.volumeY, hue, lightness)
     drawCircle(pitchCircle, coords.pitchX, coords.pitchY, hue, lightness)
+    updateBackground(hue, lightness)
+    updateButton(hue, lightness)
   }
 }
 
 
 const runDetection = () => {
   model.detect(video).then((predictions) => {
+    console.log('predictions', predictions)
     // model.renderPredictions(predictions, canvas, context, video)
     if (predictions.length > 0) {
       const coords = getVolumeAndPitchCoords(predictions)
-      if (!oscStarted) {
+      if (!oscStarted && !muted) {
         createOscillator(coords)
         oscStarted = true
-      } else {
+      } else if (!muted) {
         changeFrequency(coords)
       }
     }
     if (isVideo) {
-      requestAnimationFrame(runDetection)
+      window.requestAnimationFrame(runDetection)
     }
   })
 }
 
 load(modelParams).then((lmodel) => {
   model = lmodel
-  runDetection()
 })
+
+const startHandtrack = () => {
+  startVideo(video).then((status) => {
+    if (status) {
+      isVideo = true
+      runDetection()
+      toggleDisplayLoading()
+    }
+  })
+}
 
 startHandtrack()
