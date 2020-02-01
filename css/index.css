@@ -15,8 +15,9 @@ body{
 video{
   display: none;
 }
-#muteButton{
-  border-radius: 1px;
+#muteButton{ 
+  background-color: white;
+  border-radius: 3px;
   border: none;
   font-family: 'Comfortaa', monospace;
   font-size: 36px;

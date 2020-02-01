@@ -32,6 +32,7 @@ let oscillator
 
 const modelParams = {
   flipHorizontal: true, // flip e.g for video// reduce input image size for speed gainz
+  imageScaleFactor: 0.6,
   maxNumBoxes: 2, // maximum number of boxes to detect
   iouThreshold: 0.5, // ioU threshold for non-max suppression
   scoreThreshold: 0.6, // confidence threshold for predictions.
@@ -107,12 +108,14 @@ const getHue = (freq, vol) => {
 }
 const updateBackground = (hue, lightness) => {
   const color = `hsl(${hue}, 100%, ${lightness}%)`
-  body.style.transition = 'background-color .75 linear'
+  body.style.transition = 'background-color .1 linear'
   body.style.backgroundColor = color
 }
 
 const updateButton = (hue, lightness) => {
-  muteButton.style.backgroundColor = invertHSL(hue, lightness)
+  const hsl = invertHSL(hue, lightness)
+  muteButton.style.backgroundColor = hsl
+  muteButton.style.border = `1px solid ${hsl}`
 }
 
 const getPredictionCoords = (predictions) => {
@@ -151,14 +154,19 @@ const getVolumeAndPitchCoords = (predictions) => {
 }
 
 const changeFrequency = (coords) => {
+  const {
+    volumeX, volumeY, pitchX, pitchY,
+  } = coords
   if (oscillator) {
-    const freq = calculateFrequency(coords.pitchX)
-    const volume = calculateGain(coords.volumeY)
+    const freq = calculateFrequency(pitchX)
+    const volume = calculateGain(volumeY)
     oscillator.frequency.linearRampToValueAtTime(freq, audioContext.currentTime + glide)
     gainNode.gain.linearRampToValueAtTime(volume, audioContext.currentTime + glide)
     const [hue, lightness] = getHue(freq, volume)
-    drawCircle(volumeCircle, coords.volumeX, coords.volumeY, hue, lightness)
-    drawCircle(pitchCircle, coords.pitchX, coords.pitchY, hue, lightness)
+    if (volumeX !== pitchX && volumeY !== pitchY) {
+      drawCircle(volumeCircle, volumeX, volumeY, hue, lightness)
+    }
+    drawCircle(pitchCircle, pitchX, pitchY, hue, lightness)
     updateBackground(hue, lightness)
     updateButton(hue, lightness)
   }
@@ -167,7 +175,6 @@ const changeFrequency = (coords) => {
 
 const runDetection = () => {
   model.detect(video).then((predictions) => {
-    console.log('predictions', predictions)
     // model.renderPredictions(predictions, canvas, context, video)
     if (predictions.length > 0) {
       const coords = getVolumeAndPitchCoords(predictions)
