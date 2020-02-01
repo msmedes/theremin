@@ -1,20 +1,20 @@
 import { startVideo, load } from 'handtrackjs'
 
-const video = document.getElementById("myvideo")
-const canvas = document.getElementById("canvas")
-const context = canvas.getContext("2d")
-const body = document.getElementById("body")
+const video = document.getElementById('myvideo')
+const canvas = document.getElementById('canvas')
+const context = canvas.getContext('2d')
+const body = document.getElementById('body')
 
 let isVideo = false
 let model = null
 let oscStarted = false
-let glide = 0.5
+const glide = 0.5
 
 const minHue = 0
 const maxHue = 360
 const minLight = 0
 const maxLight = 85
-const lightFactor = .65
+const lightFactor = 0.65
 const lightFactorOffset = lightFactor * 100
 const minFrequency = 60
 const maxFrequency = 2000
@@ -22,20 +22,20 @@ const minGain = 0
 const maxGain = 1
 
 const modelParams = {
-  flipHorizontal: true,   // flip e.g for video  
-  maxNumBoxes: 2,        // maximum number of boxes to detect
-  iouThreshold: 0.5,      // ioU threshold for non-max suppression
-  scoreThreshold: 0.6,    // confidence threshold for predictions.
+  flipHorizontal: true, // flip e.g for video
+  maxNumBoxes: 2, // maximum number of boxes to detect
+  iouThreshold: 0.5, // ioU threshold for non-max suppression
+  scoreThreshold: 0.6, // confidence threshold for predictions.
 }
 
 const windowHeight = window.innerHeight
 const windowWidth = window.innerWidth
 
-let audioContext = new AudioContext(),
-  gainNode = audioContext.createGain(),
-  oscillator = null,
-  pitchCircle = document.querySelector("#pitchCircle"),
-  volumeCircle = document.querySelector("#volumeCircle")
+const audioContext = new AudioContext()
+const gainNode = audioContext.createGain()
+let oscillator = null
+const pitchCircle = document.querySelector('#pitchCircle')
+const volumeCircle = document.querySelector('#volumeCircle')
 
 
 gainNode.connect(audioContext.destination)
@@ -46,7 +46,7 @@ const startHandtrack = () => {
       isVideo = true
       runDetection()
     }
-  });
+  })
 }
 
 const calculateFrequency = (x) => {
@@ -57,10 +57,7 @@ const calculateFrequency = (x) => {
   return Math.max(minFrequency, freq)
 }
 
-const calculateGain = (y) => {
-
-  return 1 - ((y / windowHeight) * maxGain) + minGain
-}
+const calculateGain = (y) => 1 - ((y / windowHeight) * maxGain) + minGain
 
 const createOscillator = (coords) => {
   const { volumeY, pitchX } = coords
@@ -85,13 +82,13 @@ const invertHSL = (hue, lightness) => {
   return color
 }
 const drawCircle = (circle, x, y, hue, lightness) => {
-  circle.style.display = 'block';
-  circle.style.left = x + 'px';
-  circle.style.top = y + 'px';
-  circle.style.position = 'absolute';
-  circle.style.width = '10px';
-  circle.style.height = '10px';
-  circle.style.borderRadius = '50%';
+  circle.style.display = 'block'
+  circle.style.left = `${x}px`
+  circle.style.top = `${y}px`
+  circle.style.position = 'absolute'
+  circle.style.width = '10px'
+  circle.style.height = '10px'
+  circle.style.borderRadius = '50%'
   circle.style.background = invertHSL(hue, lightness)
 }
 
@@ -102,8 +99,8 @@ const getHue = (freq, vol) => {
 }
 const updateBackground = (hue, lightness) => {
   const color = `hsl(${hue}, 100%, ${lightness}%)`
-  body.style.transition = "background-color .75 ease"
-  body.style.backgroundColor = color;
+  body.style.transition = 'background-color .75 ease'
+  body.style.backgroundColor = color
 }
 
 const getPredictionCoords = (predictions) => {
@@ -112,7 +109,7 @@ const getPredictionCoords = (predictions) => {
   let maxX = Number.MIN_SAFE_INTEGER
   let maxXIndex = 0
   for (let i = 0; i < predictions.length; i += 1) {
-    let currX = predictions[i].bbox[0]
+    const currX = predictions[i].bbox[0]
     if (currX < minX) {
       minX = currX
       minXIndex = i
@@ -136,7 +133,9 @@ const getVolumeAndPitchCoords = (predictions) => {
   const pitchXScaled = (pitchX * windowWidth) / video.width
   const pitchYScaled = (pitchY * windowHeight) / video.height
 
-  return { volumeX: volumeXScaled, volumeY: volumeYScaled, pitchX: pitchXScaled, pitchY: pitchYScaled }
+  return {
+    volumeX: volumeXScaled, volumeY: volumeYScaled, pitchX: pitchXScaled, pitchY: pitchYScaled,
+  }
 }
 
 const changeFrequency = (coords) => {
@@ -154,7 +153,7 @@ const changeFrequency = (coords) => {
 
 
 const runDetection = () => {
-  model.detect(video).then(predictions => {
+  model.detect(video).then((predictions) => {
     // model.renderPredictions(predictions, canvas, context, video)
     if (predictions.length > 0) {
       const coords = getVolumeAndPitchCoords(predictions)
@@ -166,14 +165,14 @@ const runDetection = () => {
       }
     }
     if (isVideo) {
-      requestAnimationFrame(runDetection);
+      requestAnimationFrame(runDetection)
     }
-  });
+  })
 }
 
-load(modelParams).then(lmodel => {
+load(modelParams).then((lmodel) => {
   model = lmodel
   runDetection()
-});
+})
 
 startHandtrack()
