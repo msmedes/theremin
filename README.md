@@ -42,3 +42,9 @@ const runDetection = () => {
 To control the volume, move your left hand up and down. To control pitch move your right hand side to side. The frequency range is currently 20-2000hz, and the x threshold is the midline of the window width. (aka your right hand needs to the right of the middle of the screen)
 
 It's going to seem...chunky. That's because the cv model seems to operate at about 5-10 fps max, so we can only update the theremin oscillator frequency at that frame rate, along with the background colors.
+
+## Hand Positioning
+
+The CV model was trained on a dataset that consisted mostly of pictures taken from a top -> down perspective aka eye level -> seated, so to increase performance/accuracy think T-Rex hands, or channel Uma Thurman in Pulp Fiction ![Uma Thurman T-Rex Hands](https://media.giphy.com/media/l2YWwvuPQYndJTxGo/giphy.gif)
+
+Making a fist works ok as well.  Real theremins, as well as this program, have a high sensitivity to small changes in hand positioning.  You can easily go through one octave of a scale by starting with a fist and extending your pinky finger outwards without changing the position on the x-axis, as the hand positiong is computed by taking the mid-point of the bounding box.

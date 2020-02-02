@@ -18,7 +18,7 @@ let muted = true
 const glide = 0.5
 const maxHue = 360
 const maxLight = 85
-const lightFactor = 0.65
+const lightFactor = 0.50
 const lightFactorOffset = lightFactor * 100
 const minFrequency = 60
 const maxFrequency = 2000
@@ -199,8 +199,8 @@ const startHandtrack = () => {
   startVideo(video).then((status) => {
     if (status) {
       isVideo = true
-      runDetection()
       toggleDisplayLoading()
+      runDetection()
     }
   })
 }
