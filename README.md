@@ -3,6 +3,8 @@
 CV Theremin is a low-medium performance musical instrument you can "control" by waving your hands about. Made possible by the [WebAudio API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API) and
 [Handtrack.js](https://github.com/victordibia/handtrack.js/).
 
+Disclaimer: I wrote this in about 3 hours don't @ me
+
 ## Running locally
 
 To install:
