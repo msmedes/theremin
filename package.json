@@ -11,7 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "handtrackjs": "0.0.13",
-    "parcel": "^1.12.4"
+    "parcel": "^2.8.2"
   },
   "devDependencies": {
     "eslint-config-airbnb": "^18.0.1",
